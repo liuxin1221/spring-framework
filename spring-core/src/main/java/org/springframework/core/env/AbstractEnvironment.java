@@ -259,6 +259,7 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 
 	@Override
 	public String[] getActiveProfiles() {
+		//获取激活的配置文件
 		return StringUtils.toStringArray(doGetActiveProfiles());
 	}
 
@@ -271,8 +272,10 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	 * @see #doGetActiveProfilesProperty()
 	 */
 	protected Set<String> doGetActiveProfiles() {
+		//获取激活的配置文件
 		synchronized (this.activeProfiles) {
 			if (this.activeProfiles.isEmpty()) {
+				//获取 spring.profiles.active 开头的配置属性
 				String profiles = doGetActiveProfilesProperty();
 				if (StringUtils.hasText(profiles)) {
 					setActiveProfiles(StringUtils.commaDelimitedListToStringArray(

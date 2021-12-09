@@ -65,6 +65,7 @@ public class StandardEnvironment extends AbstractEnvironment {
 	 * Create a new {@code StandardEnvironment} instance with a default
 	 * {@link MutablePropertySources} instance.
 	 */
+	//继承AbstractEnvironment，调用AbstractEnvironment的构造方法的时候会执行下面的customizePropertySources方法
 	public StandardEnvironment() {
 	}
 
@@ -92,11 +93,15 @@ public class StandardEnvironment extends AbstractEnvironment {
 	 * @see #getSystemProperties()
 	 * @see #getSystemEnvironment()
 	 */
+/*	继承了AbstractEnvironment，执行AbstractEnvironment的构造方法，然后执行customizePropertySources方法，但是
+	方法又是一个空方法留给子类实现customizePropertySources*/
 	@Override
 	protected void customizePropertySources(MutablePropertySources propertySources) {
 		propertySources.addLast(
+				//获取系统Properties属性(jvm属性)
 				new PropertiesPropertySource(SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, getSystemProperties()));
 		propertySources.addLast(
+				//获取系统env属性（windows系统属性）
 				new SystemEnvironmentPropertySource(SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME, getSystemEnvironment()));
 	}
 
