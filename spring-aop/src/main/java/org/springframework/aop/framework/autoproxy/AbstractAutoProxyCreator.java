@@ -243,13 +243,20 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	}
 
 	@Override
+	//在每一个方法之前会代用次方法
 	public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) {
 		Object cacheKey = getCacheKey(beanClass, beanName);
 
 		if (!StringUtils.hasLength(beanName) || !this.targetSourcedBeans.contains(beanName)) {
+			//判断当前bean是否在advisedBeans中（保存了所有需要增强bean）
 			if (this.advisedBeans.containsKey(cacheKey)) {
 				return null;
 			}
+			/*判断bena是否是基础类型的Advice、Pointcut、Advisor、AopInfrastructureBean 或是是否是切面@Aspect*/
+			/*判断是否需要跳过
+			* 获取候选的增强器（切面里面的方法） 	List<Advisor> candidateAdvisors = findCandidateAdvisors();
+			* 判断每个增强器是不是AspectJPointcutAdvisor类型；返回true
+			* */
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
 				return null;
@@ -287,7 +294,22 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
 		if (bean != null) {
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
+			//判断之前是不是代理过
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
+				//进行包装如果需要的话
+				/**
+				 * 1）.获取所有的增强器（通知方法）	Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
+				 * 1找到候选的所有增强器（找哪些通知方法是需要切入当前bean方法的）
+				 * 2.获取到能在当前bean使用的增强器
+				 * 3.增强器排序
+				 * 2）.保存当前bean在advisedBeans中
+				 * 3）.如果当前bean需要增强、创建当前bean的代理对象
+				 * 1.获取所有的增强器（通知方法）
+				 * 2.保存到proxyFactory
+				 * 3.创建代理对象，spring自动决定用jdk动态代理还是cglib动态代理
+				 *4）.给容器中返回当前组件增强了的代理对象
+				 * 5）.以后容器中获取到的就是这个组件的代理对象，执行目标方法的时候，代理对象就会执行通知方法的流程
+				 */
 				return wrapIfNecessary(bean, beanName, cacheKey);
 			}
 		}
@@ -336,9 +358,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		}
 
 		// Create proxy if we have advice.
+		//获取当前bean能用的所有增强器
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
+			//创建代理对象
 			Object proxy = createProxy(
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
 			this.proxyTypes.put(cacheKey, proxy.getClass());
@@ -475,6 +499,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (classLoader instanceof SmartClassLoader && classLoader != beanClass.getClassLoader()) {
 			classLoader = ((SmartClassLoader) classLoader).getOriginalClassLoader();
 		}
+		//用代理工厂创建对象
 		return proxyFactory.getProxy(classLoader);
 	}
 
