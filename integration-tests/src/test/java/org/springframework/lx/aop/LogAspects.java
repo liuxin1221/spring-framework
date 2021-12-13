@@ -24,7 +24,7 @@ public class LogAspects {
 	}
 	@After("pointCut()")
 	public  void logEnd(JoinPoint joinPoint){
-		System.out.println(joinPoint.getSignature().getName()+"运行结束");
+		System.out.println(joinPoint.getSignature().getName()+" method end");
 	}
 	@AfterReturning(value = "pointCut()",returning = "result")
 	public  void logReturn(Object result){
