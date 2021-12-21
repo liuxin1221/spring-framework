@@ -1,6 +1,8 @@
 description = "Spring Integration Tests"
 
 dependencies {
+	implementation group: 'com.mchange', name: 'c3p0', version: '0.9.5.5'
+	implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.26'
 	testImplementation(project(":spring-aop"))
 	testImplementation(project(":spring-beans"))
 	testImplementation(project(":spring-context"))
